@@ -1,0 +1,90 @@
+┌─────────────────────────────────────────────────────────────────────┐
+│                     QUICK SETUP CHECKLIST                            │
+└─────────────────────────────────────────────────────────────────────┘
+
+[ ] 1. Open Supabase SQL Editor
+       → https://fjjszvvhgrkycviqftdg.databasepad.com
+       → Click "SQL Editor" in sidebar
+
+[ ] 2. Copy & Run Migration Script
+       → Open: supabase-data-migration.sql
+       → Copy ALL contents (Cmd+A → Cmd+C)
+       → Paste in SQL Editor
+       → Click RUN (or Cmd+Enter)
+
+[ ] 3. Verify Results
+       Expected Output:
+       ✓ total_months: 12
+       ✓ total_offers: 60
+       ✓ List of months with targets
+       ✓ Offer counts per month
+
+[ ] 4. Check Tables
+       → Go to "Table Editor" in Supabase
+       → monthly_targets: Should have 12 rows
+       → sales_offers: Should have 60 rows
+
+[ ] 5. Test Your App
+       → Refresh application
+       → All data should load from Supabase
+       → Make a test edit → Should save permanently
+       → Refresh page → Changes should persist
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                        WHAT CHANGED                                  │
+└─────────────────────────────────────────────────────────────────────┘
+
+✓ All 60 offers now in Supabase
+✓ All 12 months of targets in Supabase  
+✓ Add/Edit/Delete → Saves to database permanently
+✓ No more localStorage fallbacks
+✓ No more static data fallbacks
+✓ Changes sync across all users immediately
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TROUBLESHOOTING                                   │
+└─────────────────────────────────────────────────────────────────────┘
+
+Problem: App shows "No monthly targets found"
+Fix: Run the migration script in Supabase SQL Editor
+
+Problem: Tables are empty
+Fix: Make sure you ran the FULL migration script, not just part of it
+
+Problem: Changes not saving
+Fix: Check browser console for errors, verify Supabase connection
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                      FILES CREATED/MODIFIED                          │
+└─────────────────────────────────────────────────────────────────────┘
+
+NEW FILES:
+✓ supabase-data-migration.sql - Run this in Supabase!
+✓ src/hooks/useMonthlyData.ts - Fetches monthly targets
+✓ SUPABASE-SETUP-GUIDE.md - Full documentation
+✓ QUICK-START.txt - This file
+
+MODIFIED FILES:
+✓ src/hooks/useOffers.ts - Now Supabase-only
+✓ src/components/AppLayout.tsx - Uses new hooks
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SUCCESS INDICATORS                                │
+└─────────────────────────────────────────────────────────────────────┘
+
+You'll know it's working when:
+✓ App loads all 12 months on startup
+✓ Each month shows 5 offers
+✓ Edit an offer → Refresh page → Edit is still there
+✓ No errors in browser console
+✓ Supabase Table Editor shows 12 + 60 rows
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                        NEXT STEPS                                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+1. Run migration script in Supabase ← START HERE
+2. Verify data in Supabase Table Editor
+3. Refresh your app
+4. Test adding/editing an offer
+5. Done! 🎉

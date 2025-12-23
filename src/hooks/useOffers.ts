@@ -38,7 +38,8 @@ export const useOffers = () => {
 
       if (fetchError) {
         console.error('Error fetching offers from Supabase:', fetchError);
-        setError('Failed to load offers from database. Please check your connection.');
+        console.error('Error details:', JSON.stringify(fetchError, null, 2));
+        setError(`Failed to load offers: ${fetchError.message || 'Database connection error'}`);
         setLoading(false);
         return;
       }

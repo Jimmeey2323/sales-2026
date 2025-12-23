@@ -48,7 +48,8 @@ export const useMonthlyData = () => {
 
       if (fetchError) {
         console.error('Error fetching monthly targets:', fetchError);
-        setError('Failed to load monthly targets from database.');
+        console.error('Error details:', JSON.stringify(fetchError, null, 2));
+        setError(`Failed to load monthly targets: ${fetchError.message || 'Database connection error'}`);
         setLoading(false);
         return;
       }
