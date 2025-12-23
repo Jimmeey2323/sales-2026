@@ -15,6 +15,7 @@ interface StoredOffer {
   notes: string | null;
   is_active: boolean;
   is_cancelled: boolean;
+  confirmed?: boolean;
 }
 
 export const useOffers = () => {
@@ -61,7 +62,8 @@ export const useOffers = () => {
             pricingBreakdown: offer.pricing_breakdown || '',
             whyItWorks: offer.why_it_works || '',
             notes: offer.notes || '',
-            isCancelled: offer.is_cancelled || false
+            isCancelled: offer.is_cancelled || false,
+            confirmed: offer.confirmed || false
           });
         });
       }
@@ -270,6 +272,38 @@ export const useOffers = () => {
     }
   };
 
+  // Confirm offer - similar to toggleCancelled but for confirmed status
+  const confirmOffer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('sales_offers')
+        .update({ 
+          confirmed: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error confirming offer in Supabase:', error);
+        throw new Error('Failed to confirm offer. Please try again.');
+      }
+
+      // Update local state
+      setOffers(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(month => {
+          updated[month] = updated[month].map(o => 
+            o.id === id ? { ...o, confirmed: true } : o
+          );
+        });
+        return updated;
+      });
+    } catch (err) {
+      console.error('Error confirming offer:', err);
+      throw err;
+    }
+  };
+
   return {
     offers,
     loading,
@@ -279,6 +313,7 @@ export const useOffers = () => {
     deleteOffer,
     saveNote,
     toggleCancelled,
+    confirmOffer,
     refreshOffers: initializeOffers
   };
 };

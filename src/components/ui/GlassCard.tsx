@@ -12,18 +12,15 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', hover =
     <div
       onClick={onClick}
       className={`
-        relative overflow-hidden
-        bg-white/70 backdrop-blur-xl
-        border border-white/50
+        relative overflow-hidden glass-card
         rounded-2xl
-        shadow-[0_8px_32px_rgba(26,35,50,0.08)]
-        ${hover ? 'transition-all duration-300 hover:shadow-[0_12px_48px_rgba(26,35,50,0.12)] hover:-translate-y-1 cursor-pointer' : ''}
+        ${hover ? 'transition-all duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer hover:border-primary/50' : ''}
         ${className}
       `}
     >
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-slate-100/20 pointer-events-none" />
-      <div className="relative z-10">{children}</div>
+      {/* Enhanced gradient overlay */}
+      <div className=\"absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-primary/5 pointer-events-none\" />
+      <div className=\"relative z-10\">{children}</div>
     </div>
   );
 };

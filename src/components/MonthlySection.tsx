@@ -15,6 +15,9 @@ interface MonthlySectionProps {
   onSaveNote: (id: string, note: string) => void;
   onAddOffer: (month: string, offer: Omit<Offer, 'id'>) => void;
   onToggleCancelled?: (id: string) => void;
+  onConfirm?: (id: string) => void;
+  selectedOffers?: Set<string>;
+  onSelectOffer?: (id: string) => void;
 }
 
 const MonthlySection: React.FC<MonthlySectionProps> = ({ 
@@ -24,7 +27,10 @@ const MonthlySection: React.FC<MonthlySectionProps> = ({
   onDeleteOffer, 
   onSaveNote,
   onAddOffer,
-  onToggleCancelled
+  onToggleCancelled,
+  onConfirm,
+  selectedOffers = new Set(),
+  onSelectOffer
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newOffer, setNewOffer] = useState<Omit<Offer, 'id'>>({
@@ -180,6 +186,9 @@ const MonthlySection: React.FC<MonthlySectionProps> = ({
             onDelete={onDeleteOffer}
             onSaveNote={onSaveNote}
             onToggleCancelled={onToggleCancelled}
+            onConfirm={onConfirm}
+            isSelected={selectedOffers.has(offer.id)}
+            onSelect={onSelectOffer}
           />
         ))}
       </div>

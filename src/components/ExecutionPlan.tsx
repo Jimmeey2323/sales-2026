@@ -62,7 +62,7 @@ const ExecutionPlan: React.FC = () => {
         </div>
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-[#1a2332]">Execution Plan</h2>
-          <p className="text-sm text-slate-500">Roles & Responsibilities by Department</p>
+          <p className="text-sm text-muted-foreground font-medium">Roles & Responsibilities by Department</p>
         </div>
       </div>
 
@@ -81,8 +81,8 @@ const ExecutionPlan: React.FC = () => {
             
             <ul className="space-y-2">
               {dept.tasks.map((task, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm text-slate-700">
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
+                <li key={index} className="flex items-start gap-3 text-sm text-foreground font-medium">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                   <span>{task}</span>
                 </li>
               ))}

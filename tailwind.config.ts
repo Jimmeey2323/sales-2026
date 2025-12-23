@@ -66,6 +66,7 @@ export default {
         }
       },
       fontFamily: {
+        display: ['Playfair Display', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
         sans: ['Inter', 'sans-serif'],
       },
@@ -103,6 +104,10 @@ export default {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(30px) translateX(-50%)' },
+          to: { opacity: '1', transform: 'translateY(0) translateX(-50%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -112,6 +117,7 @@ export default {
         'fadeIn': 'fadeIn 0.3s ease-out forwards',
         'slideUp': 'slideUp 0.4s ease-out forwards',
         'scaleIn': 'scaleIn 0.3s ease-out forwards',
+        'slide-up': 'slide-up 0.3s ease-out forwards',
       },
 
       typography: {

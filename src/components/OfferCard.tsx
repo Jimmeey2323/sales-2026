@@ -10,9 +10,12 @@ interface OfferCardProps {
   onDelete: (id: string) => void;
   onSaveNote: (id: string, note: string) => void;
   onToggleCancelled?: (id: string) => void;
+  onConfirm?: (id: string) => void;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
-const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNote, onToggleCancelled }) => {
+const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNote, onToggleCancelled, onConfirm, isSelected = false, onSelect }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [noteText, setNoteText] = useState(offer.notes || '');
@@ -34,46 +37,90 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
   };
 
   return (
-    <GlassCard className={`overflow-hidden transition-all duration-300 ${offer.isCancelled ? 'opacity-60 border-2 border-rose-200' : ''}`}>
+    <GlassCard className={`overflow-hidden transition-all duration-300 token-card ${
+      offer.isCancelled ? 'opacity-70 border-destructive/50 bg-destructive/5' : 
+      offer.confirmed ? 'border-success border-2 bg-success/5 shadow-lg' : 'hover:shadow-xl'
+    }`}>
       {/* Header */}
       <div 
         className="p-4 sm:p-5 cursor-pointer relative"
         onClick={() => setIsExpanded(!isExpanded)}
       >
+        {offer.confirmed && (
+          <div className="absolute top-3 left-3">
+            <Badge variant="success" size="sm" className="badge-success shadow-md font-bold">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Confirmed
+            </Badge>
+          </div>
+        )}
         {offer.isCancelled && (
-          <div className="absolute top-2 right-2">
-            <Badge variant="danger" size="sm">
+          <div className="absolute top-3 right-3">
+            <Badge variant="danger" size="sm" className="bg-destructive text-destructive-foreground shadow-md font-bold">
               <XCircle className="w-3 h-3 mr-1" />
               Cancelled
             </Badge>
           </div>
         )}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <Badge variant={getBadgeVariant(offer.offerType)} size="sm">
-                {offer.offerType}
-              </Badge>
-              <span className="text-xs text-slate-400">{offer.audience}</span>
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            {onSelect && (
+              <div className="mt-1 flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onSelect(offer.id);
+                  }}
+                  className="w-4 h-4 text-primary bg-card border-2 hairline-border rounded focus:ring-primary/20 focus:ring-2"
+                />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <Badge variant={getBadgeVariant(offer.offerType)} size="sm">
+                  {offer.offerType}
+                </Badge>
+                <span className="text-xs text-slate-400">{offer.audience}</span>
+              </div>
+              <h4 className={`text-base sm:text-lg font-bold premium-heading ${
+                offer.isCancelled ? 'line-through text-muted-foreground' : 'text-foreground'
+              }`}>
+                {offer.offerName}
+              </h4>
             </div>
-            <h4 className={`text-base sm:text-lg font-semibold ${offer.isCancelled ? 'line-through text-slate-400' : 'text-[#1a2332]'}`}>
-              {offer.offerName}
-            </h4>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
+            {onConfirm && !offer.confirmed && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onConfirm(offer.id);
+                }}
+                className="p-2.5 rounded-lg hover:bg-success/10 border border-transparent hover:border-success/30 transition-all duration-300 transform hover:scale-105"
+                title="Confirm offer"
+              >
+                <CheckCircle className="w-5 h-5 text-success hover:text-success" />
+              </button>
+            )}
             {onToggleCancelled && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleCancelled(offer.id);
                 }}
-                className={`p-2 rounded-lg transition-colors ${offer.isCancelled ? 'hover:bg-emerald-50' : 'hover:bg-rose-50'}`}
+                className={`p-2.5 rounded-lg border border-transparent transition-all duration-300 transform hover:scale-105 ${
+                  offer.isCancelled 
+                    ? 'hover:bg-success/10 hover:border-success/30' 
+                    : 'hover:bg-destructive/10 hover:border-destructive/30'
+                }`}
                 title={offer.isCancelled ? 'Mark as active' : 'Mark as cancelled'}
               >
                 {offer.isCancelled ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-slate-400 hover:text-rose-500" />
+                  <XCircle className="w-5 h-5 text-muted-foreground hover:text-destructive" />
                 )}
               </button>
             )}
@@ -82,20 +129,23 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
                 e.stopPropagation();
                 onEdit(offer);
               }}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
-              title="Edit offer"
+              className={`p-2.5 rounded-lg border border-transparent hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 transform hover:scale-105 ${
+                offer.confirmed ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              title={offer.confirmed ? 'Cannot edit confirmed offer' : 'Edit offer'}
+              disabled={offer.confirmed}
             >
-              <Edit3 className="w-4 h-4 text-slate-400 hover:text-[#1a2332]" />
+              <Edit3 className="w-5 h-5 text-muted-foreground hover:text-primary" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(offer.id);
               }}
-              className="p-2 rounded-lg hover:bg-rose-50 transition-colors"
+              className="p-2.5 rounded-lg border border-transparent hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-300 transform hover:scale-105"
               title="Delete offer"
             >
-              <Trash2 className="w-4 h-4 text-slate-400 hover:text-rose-500" />
+              <Trash2 className="w-5 h-5 text-muted-foreground hover:text-destructive" />
             </button>
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-slate-400" />
@@ -106,17 +156,17 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
         </div>
         
         {/* Preview */}
-        <p className={`text-sm mt-2 line-clamp-1 ${offer.isCancelled ? 'text-slate-400' : 'text-slate-600'}`}>
+        <p className={`text-sm mt-2 line-clamp-1 body-copy ${offer.isCancelled ? 'text-slate-400' : 'text-slate-600'}`}>
           {offer.packageMechanics}
         </p>
       </div>
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-slate-100 pt-4 animate-fadeIn bg-gradient-to-br from-white to-slate-50/30">
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t hairline-border pt-4 animate-fadeIn bg-card">
           {/* Package Details */}
           <div className="space-y-4">
-            <div className="p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+            <div className="p-4 bg-card rounded-xl shadow-sm hairline-border">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                 <span className="w-1 h-4 bg-[#1a2332] rounded-full"></span>
                 Package / Mechanics
@@ -124,7 +174,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
               <p className="text-sm text-slate-700 leading-relaxed">{offer.packageMechanics}</p>
             </div>
             
-            <div className="p-4 bg-gradient-to-br from-emerald-50/50 to-white rounded-xl shadow-sm border border-emerald-100">
+            <div className="p-4 bg-accent/10 rounded-xl shadow-sm hairline-border">
               <label className="text-xs font-semibold text-emerald-700 uppercase tracking-wider flex items-center gap-2 mb-2">
                 <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
                 Pricing Breakdown
@@ -134,7 +184,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
               </p>
             </div>
             
-            <div className="p-4 bg-gradient-to-br from-amber-50/50 to-white rounded-xl shadow-sm border border-amber-100">
+            <div className="p-4 bg-accent/5 rounded-xl shadow-sm hairline-border">
               <label className="text-xs font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-2 mb-2">
                 <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
                 Why It Works
@@ -165,7 +215,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete, onSaveNo
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Add your notes here..."
-                    className="w-full px-4 py-3 text-sm border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332] resize-none shadow-sm"
+                    className="w-full px-4 py-3 text-sm border-2 hairline-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none shadow-sm body-copy"
                     rows={3}
                   />
                   <div className="flex items-center gap-2">

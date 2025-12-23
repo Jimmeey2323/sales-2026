@@ -70,7 +70,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ data, activeFilter, activeMonth
               <stat.icon className={`w-5 h-5 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`} style={{ color: stat.color.includes('emerald') ? '#10b981' : stat.color.includes('sky') ? '#0ea5e9' : stat.color.includes('amber') ? '#f59e0b' : stat.color.includes('violet') ? '#8b5cf6' : stat.color.includes('rose') ? '#f43f5e' : '#1a2332' }} />
             </div>
             <p className="text-2xl font-bold text-[#1a2332]">{stat.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+            <p className="text-xs text-muted-foreground font-bold mt-1">{stat.label}</p>
           </GlassCard>
         ))}
       </div>
@@ -144,9 +144,9 @@ const QuickStats: React.FC<QuickStatsProps> = ({ data, activeFilter, activeMonth
           </div>
           <p className="text-2xl font-bold text-[#1a2332]">{stat.value}</p>
           {stat.subValue && (
-            <p className="text-xs text-slate-500">{stat.subValue}</p>
+            <p className="text-xs text-muted-foreground font-bold">{stat.subValue}</p>
           )}
-          <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+          <p className=\"text-xs text-muted-foreground font-bold mt-1\">{stat.label}</p>
         </GlassCard>
       ))}
     </div>

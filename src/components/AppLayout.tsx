@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './Header';
 import ExecutiveSummary from './ExecutiveSummary';
 import MonthNavigation from './MonthNavigation';
@@ -14,6 +14,9 @@ import DeleteConfirmModal from './DeleteConfirmModal';
 import ExecutionPlan from './ExecutionPlan';
 import ExportPDFModal from './ExportPDFModal';
 import Footer from './Footer';
+import SearchBar from './SearchBar';
+import FiltersPanel from './FiltersPanel';
+import BulkActionsBar from './BulkActionsBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Offer } from '../data/salesData';
 import { useOffers } from '../hooks/useOffers';
@@ -30,12 +33,98 @@ const AppLayout: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<{ id: string; name: string } | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
   
-  const { offers, loading: offersLoading, error: offersError, addOffer, updateOffer, deleteOffer, saveNote, toggleCancelled } = useOffers();
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedAudiences, setSelectedAudiences] = useState<string[]>([]);
+  const [selectedOffers, setSelectedOffers] = useState<Set<string>>(new Set());
+  
+  const { offers, loading: offersLoading, error: offersError, addOffer, updateOffer, deleteOffer, saveNote, toggleCancelled, confirmOffer } = useOffers();
   const { monthlyData, loading: monthlyLoading, error: monthlyError } = useMonthlyData();
 
   const loading = offersLoading || monthlyLoading;
   const error = offersError || monthlyError;
+
+  // Get all unique types and audiences for filter options
+  const { availableTypes, availableAudiences, filteredOffers } = useMemo(() => {
+    const allOffers = Object.values(offers).flat();
+    const types = [...new Set(allOffers.map(o => o.offerType))];
+    const audiences = [...new Set(allOffers.map(o => o.audience))];
+    
+    // Apply search and filters
+    const filtered = allOffers.filter(offer => {
+      const matchesSearch = !searchQuery || 
+        offer.offerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.packageMechanics.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(offer.offerType);
+      const matchesAudience = selectedAudiences.length === 0 || selectedAudiences.includes(offer.audience);
+      const matchesCancelled = showCancelled || !offer.isCancelled;
+      return matchesSearch && matchesType && matchesAudience && matchesCancelled;
+    });
+    
+    return {
+      availableTypes: types,
+      availableAudiences: audiences,
+      filteredOffers: filtered
+    };
+  }, [offers, searchQuery, selectedTypes, selectedAudiences]);
+
+  // Filter methods
+  const handleTypeToggle = (type: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  };
+
+  const handleAudienceToggle = (audience: string) => {
+    setSelectedAudiences(prev => 
+      prev.includes(audience) ? prev.filter(a => a !== audience) : [...prev, audience]
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedTypes([]);
+    setSelectedAudiences([]);
+    setSearchQuery('');
+  };
+
+  // Bulk selection methods
+  const handleSelectOffer = (offerId: string) => {
+    setSelectedOffers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(offerId)) {
+        newSet.delete(offerId);
+      } else {
+        newSet.add(offerId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllOffers = () => {
+    const allFilteredIds = new Set(filteredOffers.map(o => o.id));
+    setSelectedOffers(allFilteredIds);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedOffers(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    selectedOffers.forEach(offerId => deleteOffer(offerId));
+    setSelectedOffers(new Set());
+  };
+
+  const handleBulkExport = () => {
+    console.log('Bulk export:', Array.from(selectedOffers));
+    // Implementation for bulk export
+  };
+
+  const handleBulkToggleVisibility = () => {
+    selectedOffers.forEach(offerId => toggleCancelled(offerId));
+  };
 
   // Filter months based on active quarter
   const filteredMonths = activeFilter === 'ALL' 
@@ -202,9 +291,14 @@ const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50/30 to-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <Header activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+      <Header 
+        activeFilter={activeFilter} 
+        setActiveFilter={setActiveFilter} 
+        showCancelled={showCancelled}
+        setShowCancelled={setShowCancelled}
+      />
 
       {/* Executive Summary */}
       <ExecutiveSummary activeFilter={activeFilter} heroImage={HERO_IMAGE} />
@@ -219,7 +313,7 @@ const AppLayout: React.FC = () => {
       {/* Floating Export Button */}
       <button
         onClick={() => setExportModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-[#1a2332] text-white font-medium rounded-xl shadow-xl hover:bg-[#2d3a4f] transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-medium rounded-xl shadow-lg hover:scale-105 transition-transform"
       >
         <FileDown className="w-5 h-5" />
         <span className="hidden sm:inline">Export PDF</span>
@@ -230,6 +324,26 @@ const AppLayout: React.FC = () => {
         {/* Quick Stats */}
         <section className="mb-12">
           <QuickStats data={monthlyData} activeFilter={activeFilter} activeMonth={activeMonth} />
+        </section>
+
+        {/* Search and Filters */}
+        <section className="mb-8">
+          <div className="space-y-4">
+            <SearchBar 
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search offers by name or mechanics..."
+            />
+            <FiltersPanel
+              selectedTypes={selectedTypes}
+              selectedAudiences={selectedAudiences}
+              onTypeToggle={handleTypeToggle}
+              onAudienceToggle={handleAudienceToggle}
+              onClearAll={handleClearFilters}
+              availableTypes={availableTypes}
+              availableAudiences={availableAudiences}
+            />
+          </div>
         </section>
 
         {/* Tabbed Analytics Section */}
@@ -255,10 +369,10 @@ const AppLayout: React.FC = () => {
               {/* Main dashboard content - Monthly Sections */}
               <div className="space-y-16">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[#1a2332] mb-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold premium-heading mb-2">
                     Monthly Sales Plans
                   </h2>
-                  <p className="text-slate-500">
+                  <p className="text-muted-foreground body-copy">
                     Detailed offers and strategies for each month • Click to expand offers
                   </p>
                 </div>
@@ -273,6 +387,9 @@ const AppLayout: React.FC = () => {
                     onSaveNote={saveNote}
                     onAddOffer={addOffer}
                     onToggleCancelled={toggleCancelled}
+                    onConfirm={confirmOffer}
+                    selectedOffers={selectedOffers}
+                    onSelectOffer={handleSelectOffer}
                   />
                 ))}
               </div>
@@ -305,6 +422,17 @@ const AppLayout: React.FC = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedOffers.size}
+        totalCount={filteredOffers.length}
+        onSelectAll={handleSelectAllOffers}
+        onClearSelection={handleClearSelection}
+        onBulkDelete={handleBulkDelete}
+        onBulkExport={handleBulkExport}
+        onBulkToggleVisibility={handleBulkToggleVisibility}
+      />
 
       {/* Edit Offer Modal */}
       <EditOfferModal

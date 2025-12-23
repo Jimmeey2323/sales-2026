@@ -10,6 +10,7 @@ export interface Offer {
   whyItWorks: string;
   notes?: string;
   isCancelled?: boolean;
+  confirmed?: boolean;
 }
 
 export interface MonthData {
