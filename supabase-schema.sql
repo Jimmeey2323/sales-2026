@@ -2,11 +2,21 @@
 -- This schema supports the Sales Plan application for FY 2025-26
 
 -- ==========================================
+-- DROP EXISTING TABLES (if any)
+-- ==========================================
+
+DROP TABLE IF EXISTS offer_performance CASCADE;
+DROP TABLE IF EXISTS user_notes CASCADE;
+DROP TABLE IF EXISTS actual_revenue CASCADE;
+DROP TABLE IF EXISTS sales_offers CASCADE;
+DROP TABLE IF EXISTS monthly_targets CASCADE;
+
+-- ==========================================
 -- TABLE: sales_offers
 -- Stores all sales offers for each month
 -- ==========================================
 
-CREATE TABLE IF NOT EXISTS sales_offers (
+CREATE TABLE sales_offers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   month TEXT NOT NULL,
   year INTEGER NOT NULL DEFAULT 2026,
@@ -33,7 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_sales_offers_is_cancelled ON sales_offers(is_canc
 -- Stores revenue targets for each month
 -- ==========================================
 
-CREATE TABLE IF NOT EXISTS monthly_targets (
+CREATE TABLE monthly_targets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   month TEXT NOT NULL,
   year INTEGER NOT NULL DEFAULT 2026,
@@ -65,7 +75,7 @@ CREATE INDEX IF NOT EXISTS idx_monthly_targets_month_year ON monthly_targets(mon
 -- Tracks actual revenue achieved each month
 -- ==========================================
 
-CREATE TABLE IF NOT EXISTS actual_revenue (
+CREATE TABLE actual_revenue (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   month TEXT NOT NULL,
   year INTEGER NOT NULL,
@@ -86,7 +96,7 @@ CREATE INDEX IF NOT EXISTS idx_actual_revenue_month_year ON actual_revenue(month
 -- Tracks performance metrics for each offer
 -- ==========================================
 
-CREATE TABLE IF NOT EXISTS offer_performance (
+CREATE TABLE offer_performance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   offer_id UUID REFERENCES sales_offers(id) ON DELETE CASCADE,
   month TEXT NOT NULL,
@@ -108,7 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_offer_performance_month_year ON offer_performance
 -- Stores user notes and comments
 -- ==========================================
 
-CREATE TABLE IF NOT EXISTS user_notes (
+CREATE TABLE user_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   month TEXT,
   category TEXT,

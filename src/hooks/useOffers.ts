@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { monthlyData, Offer } from '../data/salesData';
+import { Offer } from '../data/salesData';
 
 interface StoredOffer {
   id: string;
@@ -14,39 +14,39 @@ interface StoredOffer {
   why_it_works: string | null;
   notes: string | null;
   is_active: boolean;
+  is_cancelled: boolean;
 }
 
 export const useOffers = () => {
   const [offers, setOffers] = useState<Record<string, Offer[]>>({});
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initialize offers from static data and merge with database
+  // Initialize offers from Supabase only - single source of truth
   const initializeOffers = useCallback(async () => {
     try {
-      // First, get all offers from database
-      const { data: dbOffers, error } = await supabase
+      setLoading(true);
+      setError(null);
+
+      // Fetch all offers from Supabase
+      const { data: dbOffers, error: fetchError } = await supabase
         .from('sales_offers')
         .select('*')
         .eq('year', 2026)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching offers:', error);
-        // Fall back to static data
-        const staticOffers: Record<string, Offer[]> = {};
-        monthlyData.forEach(month => {
-          staticOffers[month.month] = month.offers;
-        });
-        setOffers(staticOffers);
+      if (fetchError) {
+        console.error('Error fetching offers from Supabase:', fetchError);
+        setError('Failed to load offers from database. Please check your connection.');
         setLoading(false);
         return;
       }
 
-      // If database has offers, use them; otherwise use static data
+      // Group offers by month
+      const groupedOffers: Record<string, Offer[]> = {};
+      
       if (dbOffers && dbOffers.length > 0) {
-        const groupedOffers: Record<string, Offer[]> = {};
-        
         dbOffers.forEach((offer: StoredOffer) => {
           if (!groupedOffers[offer.month]) {
             groupedOffers[offer.month] = [];
@@ -60,91 +60,16 @@ export const useOffers = () => {
             pricingBreakdown: offer.pricing_breakdown || '',
             whyItWorks: offer.why_it_works || '',
             notes: offer.notes || '',
-            isCancelled: (offer as any).is_cancelled || false
+            isCancelled: offer.is_cancelled || false
           });
         });
-
-        // Fill in any missing months with static data
-        monthlyData.forEach(month => {
-          if (!groupedOffers[month.month]) {
-            groupedOffers[month.month] = month.offers;
-          }
-        });
-
-        setOffers(groupedOffers);
-      } else {
-        // Initialize database with static data
-        const allOffers: any[] = [];
-        monthlyData.forEach(month => {
-          month.offers.forEach(offer => {
-            allOffers.push({
-              month: month.month,
-              year: 2026,
-              offer_type: offer.offerType,
-              offer_name: offer.offerName,
-              audience: offer.audience,
-              package_mechanics: offer.packageMechanics,
-              pricing_breakdown: offer.pricingBreakdown,
-              why_it_works: offer.whyItWorks,
-              notes: offer.notes || null,
-              is_active: true
-            });
-          });
-        });
-
-        const { error: insertError } = await supabase
-          .from('sales_offers')
-          .insert(allOffers);
-
-        if (insertError) {
-          console.error('Error inserting offers:', insertError);
-        }
-
-        // Fetch the newly inserted offers
-        const { data: newOffers } = await supabase
-          .from('sales_offers')
-          .select('*')
-          .eq('year', 2026)
-          .eq('is_active', true);
-
-        if (newOffers) {
-          const groupedOffers: Record<string, Offer[]> = {};
-          newOffers.forEach((offer: StoredOffer) => {
-            if (!groupedOffers[offer.month]) {
-              groupedOffers[offer.month] = [];
-            }
-            groupedOffers[offer.month].push({
-              id: offer.id,
-              offerType: offer.offer_type,
-              offerName: offer.offer_name,
-              audience: offer.audience || '',
-              packageMechanics: offer.package_mechanics || '',
-              pricingBreakdown: offer.pricing_breakdown || '',
-              whyItWorks: offer.why_it_works || '',
-              notes: offer.notes || ''
-            });
-          });
-          setOffers(groupedOffers);
-        } else {
-          // Fall back to static data
-          const staticOffers: Record<string, Offer[]> = {};
-          monthlyData.forEach(month => {
-            staticOffers[month.month] = month.offers;
-          });
-          setOffers(staticOffers);
-        }
       }
 
-      setInitialized(true);
+      setOffers(groupedOffers);
+      setLoading(false);
     } catch (err) {
       console.error('Error initializing offers:', err);
-      // Fall back to static data
-      const staticOffers: Record<string, Offer[]> = {};
-      monthlyData.forEach(month => {
-        staticOffers[month.month] = month.offers;
-      });
-      setOffers(staticOffers);
-    } finally {
+      setError('An unexpected error occurred while loading offers.');
       setLoading(false);
     }
   }, []);
@@ -153,7 +78,7 @@ export const useOffers = () => {
     initializeOffers();
   }, [initializeOffers]);
 
-  // Add new offer
+  // Add new offer - always persists to Supabase
   const addOffer = async (month: string, offer: Omit<Offer, 'id'>) => {
     try {
       const { data, error } = await supabase
@@ -168,12 +93,16 @@ export const useOffers = () => {
           pricing_breakdown: offer.pricingBreakdown,
           why_it_works: offer.whyItWorks,
           notes: null,
-          is_active: true
+          is_active: true,
+          is_cancelled: false
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding offer to Supabase:', error);
+        throw new Error('Failed to add offer. Please try again.');
+      }
 
       const newOffer: Offer = {
         id: data.id,
@@ -183,9 +112,11 @@ export const useOffers = () => {
         packageMechanics: data.package_mechanics || '',
         pricingBreakdown: data.pricing_breakdown || '',
         whyItWorks: data.why_it_works || '',
-        notes: data.notes || ''
+        notes: data.notes || '',
+        isCancelled: false
       };
 
+      // Update local state
       setOffers(prev => ({
         ...prev,
         [month]: [...(prev[month] || []), newOffer]
@@ -194,20 +125,11 @@ export const useOffers = () => {
       return newOffer;
     } catch (err) {
       console.error('Error adding offer:', err);
-      // Add locally as fallback
-      const newOffer: Offer = {
-        id: `local-${Date.now()}`,
-        ...offer
-      };
-      setOffers(prev => ({
-        ...prev,
-        [month]: [...(prev[month] || []), newOffer]
-      }));
-      return newOffer;
+      throw err;
     }
   };
 
-  // Update offer
+  // Update offer - always persists to Supabase
   const updateOffer = async (offer: Offer) => {
     try {
       const { error } = await supabase
@@ -223,8 +145,12 @@ export const useOffers = () => {
         })
         .eq('id', offer.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating offer in Supabase:', error);
+        throw new Error('Failed to update offer. Please try again.');
+      }
 
+      // Update local state
       setOffers(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(month => {
@@ -236,29 +162,27 @@ export const useOffers = () => {
       });
     } catch (err) {
       console.error('Error updating offer:', err);
-      // Update locally as fallback
-      setOffers(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(month => {
-          updated[month] = updated[month].map(o => 
-            o.id === offer.id ? offer : o
-          );
-        });
-        return updated;
-      });
+      throw err;
     }
   };
 
-  // Delete offer (soft delete)
+  // Delete offer (soft delete) - always persists to Supabase
   const deleteOffer = async (id: string) => {
     try {
       const { error } = await supabase
         .from('sales_offers')
-        .update({ is_active: false })
+        .update({ 
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting offer in Supabase:', error);
+        throw new Error('Failed to delete offer. Please try again.');
+      }
 
+      // Update local state
       setOffers(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(month => {
@@ -268,18 +192,11 @@ export const useOffers = () => {
       });
     } catch (err) {
       console.error('Error deleting offer:', err);
-      // Delete locally as fallback
-      setOffers(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(month => {
-          updated[month] = updated[month].filter(o => o.id !== id);
-        });
-        return updated;
-      });
+      throw err;
     }
   };
 
-  // Save note
+  // Save note - always persists to Supabase
   const saveNote = async (id: string, note: string) => {
     try {
       const { error } = await supabase
@@ -290,8 +207,12 @@ export const useOffers = () => {
         })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving note in Supabase:', error);
+        throw new Error('Failed to save note. Please try again.');
+      }
 
+      // Update local state
       setOffers(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(month => {
@@ -303,20 +224,11 @@ export const useOffers = () => {
       });
     } catch (err) {
       console.error('Error saving note:', err);
-      // Save locally as fallback
-      setOffers(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(month => {
-          updated[month] = updated[month].map(o => 
-            o.id === id ? { ...o, notes: note } : o
-          );
-        });
-        return updated;
-      });
+      throw err;
     }
   };
 
-  // Toggle cancelled status
+  // Toggle cancelled status - always persists to Supabase
   const toggleCancelled = async (id: string) => {
     // First find the current cancelled status
     let currentStatus = false;
@@ -336,8 +248,12 @@ export const useOffers = () => {
         })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error toggling cancelled status in Supabase:', error);
+        throw new Error('Failed to update offer status. Please try again.');
+      }
 
+      // Update local state
       setOffers(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(month => {
@@ -349,26 +265,19 @@ export const useOffers = () => {
       });
     } catch (err) {
       console.error('Error toggling cancelled status:', err);
-      // Update locally as fallback
-      setOffers(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(month => {
-          updated[month] = updated[month].map(o => 
-            o.id === id ? { ...o, isCancelled: newStatus } : o
-          );
-        });
-        return updated;
-      });
+      throw err;
     }
   };
 
   return {
     offers,
     loading,
+    error,
     addOffer,
     updateOffer,
     deleteOffer,
     saveNote,
-    toggleCancelled
+    toggleCancelled,
+    refreshOffers: initializeOffers
   };
 };

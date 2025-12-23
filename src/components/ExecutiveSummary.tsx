@@ -73,27 +73,13 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ activeFilter, heroI
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full mb-4 sm:mb-6">
             <Sparkles className="w-4 h-4 text-amber-300" />
             <span className="text-sm font-medium text-white">
-              {activeFilter === 'ALL' ? 'Full Year 2026' : activeFilter + ' 2026'} Sales Strategy
+              {activeFilter === 'ALL' ? 'Full Year' : activeFilter} Strategy
             </span>
           </div>
           
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4">
-            Revenue Target
+            Sales Plan for Physique 57 India FY-2025-26
           </h1>
-          
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <span className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white tracking-tight">
-              {formatCurrency(displayTarget)}
-            </span>
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-emerald-400/20 backdrop-blur-md rounded-full">
-              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" />
-              <span className="text-sm sm:text-base font-bold text-emerald-300">+{growthPercent}%</span>
-            </div>
-          </div>
-          
-          <p className="text-base sm:text-lg text-white/80">
-            vs {formatCurrency(displayBaseline)} Historic Baseline (2025)
-          </p>
         </div>
 
         {/* KPI Cards */}

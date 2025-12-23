@@ -15,8 +15,9 @@ import ExecutionPlan from './ExecutionPlan';
 import ExportPDFModal from './ExportPDFModal';
 import Footer from './Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { monthlyData, Offer } from '../data/salesData';
+import { Offer } from '../data/salesData';
 import { useOffers } from '../hooks/useOffers';
+import { useMonthlyData } from '../hooks/useMonthlyData';
 import { Loader2, FileDown, BarChart3, MapPin, ClipboardList } from 'lucide-react';
 
 const HERO_IMAGE = 'https://d64gsuwffb70l.cloudfront.net/694a328e005ff2dcda4b5f50_1766470401544_6d5d4446.jpg';
@@ -30,12 +31,21 @@ const AppLayout: React.FC = () => {
   const [offerToDelete, setOfferToDelete] = useState<{ id: string; name: string } | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   
-  const { offers, loading, addOffer, updateOffer, deleteOffer, saveNote, toggleCancelled } = useOffers();
+  const { offers, loading: offersLoading, error: offersError, addOffer, updateOffer, deleteOffer, saveNote, toggleCancelled } = useOffers();
+  const { monthlyData, loading: monthlyLoading, error: monthlyError } = useMonthlyData();
+
+  const loading = offersLoading || monthlyLoading;
+  const error = offersError || monthlyError;
 
   // Filter months based on active quarter
   const filteredMonths = activeFilter === 'ALL' 
     ? monthlyData 
     : monthlyData.filter(m => m.quarter === activeFilter);
+
+  // Reset activeMonth when filter changes
+  useEffect(() => {
+    setActiveMonth(null);
+  }, [activeFilter]);
 
   // Filter months based on active quarter or active month
   let displayMonths = filteredMonths;
@@ -135,8 +145,12 @@ const AppLayout: React.FC = () => {
             
             {/* Center logo */}
             <div className="relative w-32 h-32 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white to-slate-100 flex items-center justify-center shadow-2xl">
-                <span className="text-[#1a2332] font-bold text-3xl">P57</span>
+              <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-2xl p-2">
+                <img 
+                  src="https://lh3.googleusercontent.com/d/1RsoPmNAjAybOpH9HGBqiHtYp18j50w0r" 
+                  alt="Physique 57 India" 
+                  className="w-full h-full object-contain"
+                />
               </div>
             </div>
           </div>
