@@ -31,12 +31,12 @@ const SummaryTable: React.FC<SummaryTableProps> = ({ data, activeFilter }) => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50/80">
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Month</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Target</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Key Theme</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Hero Offer</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Pricing Note</th>
+            <tr className="bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 border-b-2 border-primary/20">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-primary uppercase tracking-wider">Month</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-primary uppercase tracking-wider">Target</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-primary uppercase tracking-wider">Key Theme</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-primary uppercase tracking-wider">Hero Offer</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-primary uppercase tracking-wider">Pricing Note</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

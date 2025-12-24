@@ -5,11 +5,15 @@ import { toast } from '@/components/ui/use-toast';
 interface AppContextType {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  aiSummaries: Record<string, string>;
+  setAISummary: (month: string, summary: string) => void;
 }
 
 const defaultAppContext: AppContextType = {
   sidebarOpen: false,
   toggleSidebar: () => {},
+  aiSummaries: {},
+  setAISummary: () => {},
 };
 
 const AppContext = createContext<AppContextType>(defaultAppContext);
@@ -18,9 +22,17 @@ export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiSummaries, setAISummaries] = useState<Record<string, string>>({});
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
+  };
+
+  const setAISummary = (month: string, summary: string) => {
+    setAISummaries(prev => ({
+      ...prev,
+      [month]: summary,
+    }));
   };
 
   return (
@@ -28,6 +40,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         sidebarOpen,
         toggleSidebar,
+        aiSummaries,
+        setAISummary,
       }}
     >
       {children}

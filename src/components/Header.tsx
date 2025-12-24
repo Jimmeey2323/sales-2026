@@ -11,62 +11,62 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ activeFilter, setActiveFilter, showCancelled, setShowCancelled }) => {
   return (
-    <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-xl border-b-2 hairline-border shadow-lg">
+    <header className="sticky top-4 z-40 pointer-events-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="glass-surface p-3 sm:p-4 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl gradient-primary flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-300">
-              <span className="text-white font-bold text-lg sm:text-xl premium-heading">P57</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
+              <span className="text-white font-extrabold text-lg sm:text-xl">P57</span>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold premium-heading text-foreground">Physique 57 India</h1>
-              <p className="text-xs body-copy text-muted-foreground font-semibold">Sales Plan FY 2025-26</p>
+            <div className="hidden sm:flex flex-col leading-tight">
+              <h1 className="text-base sm:text-lg brand-heading">Physique 57 India</h1>
+              <p className="text-xs text-muted-foreground">Sales Plan FY 2025-26</p>
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-1 bg-muted/90 rounded-xl p-1 shadow-md">
-            {(['Q1', 'Q2', 'Q3', 'Q4', 'ALL'] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`
-                  px-3 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 transform
-                  ${activeFilter === filter 
-                    ? 'gradient-primary text-primary-foreground shadow-lg scale-105' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-card/80 hover:shadow-md'
-                  }
-                `}
-              >
-                {filter === 'ALL' ? 'Full Year' : filter}
-              </button>
-            ))}
-          </div>
+          {/* Navigation Tabs - compact */}
+          <nav className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-1">
+              {(['Q1', 'Q2', 'Q3', 'Q4', 'ALL'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  aria-pressed={activeFilter === filter}
+                  className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeFilter === filter ? 'tab-button active' : 'tab-button'}`}
+                >
+                  {filter === 'ALL' ? 'Full Year' : filter}
+                </button>
+              ))}
+            </div>
+          </nav>
 
-          {/* Stats Pills */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-xl border-2 hairline-border shadow-md">
-              <input
-                type="checkbox"
-                id="show-cancelled"
-                checked={showCancelled}
-                onChange={(e) => setShowCancelled(e.target.checked)}
-                className="w-4 h-4 text-primary bg-card border-2 hairline-border rounded focus:ring-primary/30 focus:ring-2"
-              />
-              <label htmlFor="show-cancelled" className="text-sm font-semibold text-foreground cursor-pointer premium-heading">
-                Show Cancelled
+          {/* Right: controls */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
+              <label className="flex items-center gap-2 px-3 py-1.5 glass-btn">
+                <input
+                  type="checkbox"
+                  id="show-cancelled"
+                  checked={showCancelled}
+                  onChange={(e) => setShowCancelled(e.target.checked)}
+                  className="w-4 h-4 text-primary bg-card border-2 hairline-border rounded focus:ring-primary/20 focus:ring-2"
+                />
+                <span className="text-sm font-medium text-foreground select-none">Show Cancelled</span>
               </label>
+
+              <div className="px-3 py-1.5 glass-btn flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">+33%</span>
+              </div>
+
+              <div className="px-3 py-1.5 glass-btn flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-muted-foreground">3 Studios</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 gradient-success rounded-xl shadow-md">
-              <TrendingUp className="w-4 h-4 text-success-foreground" />
-              <span className="text-sm font-bold text-success-foreground premium-heading">+33% Growth</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-xl border-2 hairline-border shadow-md">
-              <Building2 className="w-4 h-4 text-primary" />
-              <span className="text-sm font-bold text-foreground premium-heading">3 Studios</span>
-            </div>
-            <div className="flex items-center">
+
+            <div>
               <ThemeToggle />
             </div>
           </div>
@@ -86,10 +86,16 @@ const ThemeToggle: React.FC = () => {
         e.stopPropagation();
         toggleTheme();
       }}
-      className="p-2.5 rounded-xl bg-card border-2 hairline-border hover:border-primary shadow-md hover:shadow-lg transition-all duration-300 flex items-center transform hover:scale-105"
+      aria-pressed={theme === 'dark'}
+      aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      className={`glass-btn p-2 ${theme === 'dark' ? 'shadow-md' : ''}`}
       title="Toggle theme"
     >
-      {theme === 'dark' ? <Sun className="w-5 h-5 text-warning" /> : <Moon className="w-5 h-5 text-primary" />}
+      {theme === 'dark' ? (
+        <Sun className="w-4 h-4 text-amber-400" />
+      ) : (
+        <Moon className="w-4 h-4 text-slate-600" />
+      )}
     </button>
   )
 }

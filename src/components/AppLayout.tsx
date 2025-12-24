@@ -12,20 +12,35 @@ import AnniversaryBanner from './AnniversaryBanner';
 import QuickStats from './QuickStats';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ExecutionPlan from './ExecutionPlan';
-import ExportPDFModal from './ExportPDFModal';
+import AdvancedPDFModal from './AdvancedPDFModal';
+import { useAppContext } from '../contexts/AppContext';
 import Footer from './Footer';
 import SearchBar from './SearchBar';
 import FiltersPanel from './FiltersPanel';
 import BulkActionsBar from './BulkActionsBar';
+import BackToTop from './BackToTop';
+import Breadcrumbs from './Breadcrumbs';
+import OfferBankModal from './OfferBankModal';
+import { LoadingQuickStats, LoadingMonthSection } from './LoadingCards';
+import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Button } from './ui/button';
 import { Offer } from '../data/salesData';
 import { useOffers } from '../hooks/useOffers';
 import { useMonthlyData } from '../hooks/useMonthlyData';
-import { Loader2, FileDown, BarChart3, MapPin, ClipboardList } from 'lucide-react';
+import { Loader2, FileDown, BarChart3, MapPin, ClipboardList, Sparkles } from 'lucide-react';
 
 const HERO_IMAGE = 'https://d64gsuwffb70l.cloudfront.net/694a328e005ff2dcda4b5f50_1766470401544_6d5d4446.jpg';
 
+// Studio media configuration (images and videos for carousel)
+const STUDIO_MEDIA = [
+  { type: 'image' as const, url: 'https://d64gsuwffb70l.cloudfront.net/694a328e005ff2dcda4b5f50_1766470401544_6d5d4446.jpg', alt: 'Physique 57 Studio Interior' },
+  { type: 'video' as const, url: 'https://d64gsuwffb70l.cloudfront.net/694a328e005ff2dcda4b5f50_1766470401544_6d5d4446.mp4', alt: 'Studio Tour Video' },
+  { type: 'image' as const, url: 'https://d64gsuwffb70l.cloudfront.net/694a328e005ff2dcda4b5f50_1766470401544_6d5d4447.jpg', alt: 'Group Class Session' },
+];
+
 const AppLayout: React.FC = () => {
+  const { aiSummaries } = useAppContext();
   const [activeFilter, setActiveFilter] = useState<'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL'>('ALL');
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
@@ -33,6 +48,7 @@ const AppLayout: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<{ id: string; name: string } | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [offerBankOpen, setOfferBankOpen] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
   
   // Search and filter state
@@ -131,10 +147,16 @@ const AppLayout: React.FC = () => {
     ? monthlyData 
     : monthlyData.filter(m => m.quarter === activeFilter);
 
-  // Reset activeMonth when filter changes
+  // Reset activeMonth when filter changes, but allow navigation between months
   useEffect(() => {
-    setActiveMonth(null);
-  }, [activeFilter]);
+    // Only reset if we're switching between quarter filters
+    if (activeMonth) {
+      const activeMonthData = monthlyData.find(m => m.month === activeMonth);
+      if (activeMonthData && activeMonthData.quarter !== activeFilter && activeFilter !== 'ALL') {
+        setActiveMonth(null);
+      }
+    }
+  }, [activeFilter, monthlyData]);
 
   // Filter months based on active quarter or active month
   let displayMonths = filteredMonths;
@@ -149,10 +171,17 @@ const AppLayout: React.FC = () => {
 
   // Handle month selection
   const handleSelectMonth = (month: string) => {
-    setActiveMonth(month);
-    const element = document.getElementById(month.toLowerCase());
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Toggle month selection - clicking same month deselects it
+    if (activeMonth === month) {
+      setActiveMonth(null);
+    } else {
+      setActiveMonth(month);
+      const element = document.getElementById(month.toLowerCase());
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
   };
 
@@ -290,6 +319,7 @@ const AppLayout: React.FC = () => {
     );
   }
 
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -301,7 +331,7 @@ const AppLayout: React.FC = () => {
       />
 
       {/* Executive Summary */}
-      <ExecutiveSummary activeFilter={activeFilter} heroImage={HERO_IMAGE} />
+      <ExecutiveSummary activeFilter={activeFilter} heroImage={HERO_IMAGE} studioMedia={STUDIO_MEDIA} />
 
       {/* Month Navigation */}
       <MonthNavigation 
@@ -310,113 +340,157 @@ const AppLayout: React.FC = () => {
         onSelectMonth={handleSelectMonth}
       />
 
-      {/* Floating Export Button */}
-      <button
-        onClick={() => setExportModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-medium rounded-xl shadow-lg hover:scale-105 transition-transform"
-      >
-        <FileDown className="w-5 h-5" />
-        <span className="hidden sm:inline">Export PDF</span>
-      </button>
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <button
+          onClick={() => setOfferBankOpen(true)}
+          className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-200"
+          title="Open Offer Bank"
+        >
+          <Sparkles className="w-5 h-5" />
+          <span className="hidden sm:inline">Offer Bank</span>
+        </button>
+        <button
+          onClick={() => setExportModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-3 bg-foreground/10 backdrop-blur-sm text-foreground font-medium rounded-xl shadow-soft-lg hover:bg-foreground/20 hover:-translate-y-1 transition-all duration-200"
+          title="Export to PDF"
+        >
+          <FileDown className="w-5 h-5" />
+          <span className="hidden sm:inline">Export PDF</span>
+        </button>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main data-pdf-content className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Breadcrumbs */}
+        <Breadcrumbs activeFilter={activeFilter} activeMonth={activeMonth} />
+
         {/* Quick Stats */}
-        <section className="mb-12">
-          <QuickStats data={monthlyData} activeFilter={activeFilter} activeMonth={activeMonth} />
+        <section className="mb-12 animate-fade-in">
+          {loading ? <LoadingQuickStats /> : <QuickStats data={monthlyData} activeFilter={activeFilter} activeMonth={activeMonth} />}
         </section>
 
         {/* Search and Filters */}
-        <section className="mb-8">
-          <div className="space-y-4">
-            <SearchBar 
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search offers by name or mechanics..."
-            />
-            <FiltersPanel
-              selectedTypes={selectedTypes}
-              selectedAudiences={selectedAudiences}
-              onTypeToggle={handleTypeToggle}
-              onAudienceToggle={handleAudienceToggle}
-              onClearAll={handleClearFilters}
-              availableTypes={availableTypes}
-              availableAudiences={availableAudiences}
-            />
-          </div>
+        <section className="mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <Card className="shadow-soft">
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                <SearchBar 
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search offers by name or mechanics..."
+                />
+                <FiltersPanel
+                  selectedTypes={selectedTypes}
+                  selectedAudiences={selectedAudiences}
+                  onTypeToggle={handleTypeToggle}
+                  onAudienceToggle={handleAudienceToggle}
+                  onClearAll={handleClearFilters}
+                  availableTypes={availableTypes}
+                  availableAudiences={availableAudiences}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Tabbed Analytics Section */}
-        <section className="mb-12">
+        <section className="mb-12 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <Tabs defaultValue="main" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8">
-              <TabsTrigger value="main">Main</TabsTrigger>
-              <TabsTrigger value="revenue">
-                <BarChart3 className="w-4 h-4 mr-1" />
-                Revenue
-              </TabsTrigger>
-              <TabsTrigger value="location">
-                <MapPin className="w-4 h-4 mr-1" />
-                Location
-              </TabsTrigger>
-              <TabsTrigger value="cheatsheet">
-                <ClipboardList className="w-4 h-4 mr-1" />
-                Cheat Sheet
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex justify-center mb-8">
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg shadow-soft">
+                <TabsTrigger value="main">Main</TabsTrigger>
+                <TabsTrigger value="revenue">
+                  <BarChart3 className="w-4 h-4 mr-1" />
+                  Revenue
+                </TabsTrigger>
+                <TabsTrigger value="location">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  Location
+                </TabsTrigger>
+                <TabsTrigger value="cheatsheet">
+                  <ClipboardList className="w-4 h-4 mr-1" />
+                  Cheat Sheet
+                </TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="main" className="space-y-12">
               {/* Main dashboard content - Monthly Sections */}
               <div className="space-y-16">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-bold premium-heading mb-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 mb-2">
                     Monthly Sales Plans
                   </h2>
-                  <p className="text-muted-foreground body-copy">
+                  <p className="text-muted-foreground">
                     Detailed offers and strategies for each month • Click to expand offers
                   </p>
                 </div>
 
-                {displayMonths.map((month) => (
-                  <MonthlySection
-                    key={month.month}
-                    monthData={month}
-                    offers={offers[month.month] || month.offers}
-                    onEditOffer={handleEditOffer}
-                    onDeleteOffer={handleDeleteOffer}
-                    onSaveNote={saveNote}
-                    onAddOffer={addOffer}
-                    onToggleCancelled={toggleCancelled}
-                    onConfirm={confirmOffer}
-                    selectedOffers={selectedOffers}
-                    onSelectOffer={handleSelectOffer}
-                  />
+                {displayMonths.map((month, index) => (
+                  <div className="animate-slide-in" style={{ animationDelay: `${index * 0.1}s`}}>
+                    <MonthlySection
+                      key={month.month}
+                      monthData={month}
+                      offers={offers[month.month] || month.offers}
+                      onEditOffer={handleEditOffer}
+                      onDeleteOffer={handleDeleteOffer}
+                      onSaveNote={saveNote}
+                      onAddOffer={addOffer}
+                      onToggleCancelled={toggleCancelled}
+                      onConfirm={confirmOffer}
+                      selectedOffers={selectedOffers}
+                      onSelectOffer={handleSelectOffer}
+                      showCancelled={showCancelled}
+                      activeMonth={month.month}
+                    />
+                  </div>
                 ))}
               </div>
             </TabsContent>
             
             <TabsContent value="revenue">
-              <RevenueChart data={monthlyData} activeFilter={activeFilter} />
+              <Card className="shadow-soft">
+                <CardContent className="p-4 sm:p-6">
+                  <RevenueChart data={monthlyData} activeFilter={activeFilter} />
+                </CardContent>
+              </Card>
             </TabsContent>
             
             <TabsContent value="location">
-              <LocationBreakdown data={monthlyData} activeFilter={activeFilter} />
+              <Card className="shadow-soft">
+                <CardContent className="p-4 sm:p-6">
+                  <LocationBreakdown data={monthlyData} activeFilter={activeFilter} />
+                </CardContent>
+              </Card>
             </TabsContent>
             
             <TabsContent value="cheatsheet">
-              <SummaryTable data={monthlyData} activeFilter={activeFilter} />
+              <Card className="shadow-soft">
+                <CardContent className="p-4 sm:p-6">
+                  <SummaryTable data={monthlyData} activeFilter={activeFilter} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </section>
 
         {/* Execution Plan */}
-        <section className="mt-16">
-          <ExecutionPlan />
+        <section className="mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <Card className="shadow-soft">
+            <CardContent className="p-4 sm:p-6">
+              <ExecutionPlan activeMonth={activeMonth} />
+            </CardContent>
+          </Card>
         </section>
 
         {/* Risk Assessment */}
-        <section className="mt-16">
-          <RiskAssessment activeFilter={activeFilter} />
+        <section className="mt-16 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <Card className="shadow-soft">
+            <CardContent className="p-4 sm:p-6">
+              <RiskAssessment activeFilter={activeFilter} activeMonth={activeMonth} />
+            </CardContent>
+          </Card>
         </section>
       </main>
 
@@ -445,6 +519,17 @@ const AppLayout: React.FC = () => {
         onSave={handleSaveOffer}
       />
 
+      {/* Offer Bank Modal */}
+      <OfferBankModal
+        isOpen={offerBankOpen}
+        onClose={() => setOfferBankOpen(false)}
+        onSelectOffer={(offer) => {
+          // Pre-fill the add offer form with selected template
+          setEditingOffer({ ...offer, id: '' } as Offer);
+          setIsEditModalOpen(true);
+        }}
+      />
+
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={deleteModalOpen}
@@ -456,13 +541,18 @@ const AppLayout: React.FC = () => {
         offerName={offerToDelete?.name || ''}
       />
 
-      {/* Export PDF Modal */}
-      <ExportPDFModal
+      {/* Advanced PDF Export Modal */}
+      <AdvancedPDFModal
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
+        monthlyData={monthlyData}
         offers={offers}
         activeFilter={activeFilter}
+        aiSummaries={aiSummaries}
       />
+
+      {/* Back to Top Button */}
+      <BackToTop />
     </div>
   );
 };

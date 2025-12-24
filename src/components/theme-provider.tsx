@@ -20,11 +20,13 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [themeState, setThemeState] = useState<Theme>(() => {
+    // Always use defaultTheme on initial load, clear any saved dark theme
     if (typeof window !== "undefined") {
+      // Clear old theme preference to ensure fresh start
       const savedTheme = localStorage.getItem("theme")
-      return (savedTheme && (savedTheme === "dark" || savedTheme === "light" || savedTheme === "system")
-        ? (savedTheme as Theme)
-        : defaultTheme) as Theme
+      if (savedTheme === "dark" || savedTheme === "system") {
+        localStorage.removeItem("theme")
+      }
     }
     return defaultTheme as Theme
   })
@@ -39,6 +41,9 @@ export function ThemeProvider({
         : themeState
       root.classList.remove("light", "dark")
       root.classList.add(applied)
+      
+      // Also set attribute for better CSS targeting
+      root.setAttribute('data-theme', applied)
     }
 
     applyTheme()

@@ -2,21 +2,53 @@ import React from 'react';
 import { AlertTriangle, Shield, TrendingDown, CheckCircle } from 'lucide-react';
 import GlassCard from './ui/GlassCard';
 import Badge from './ui/Badge';
-import { RiskItem, h1Risks, h2Risks } from '../data/salesData';
+import { RiskItem, h1Risks, h2Risks, monthlyData } from '../data/salesData';
 
 interface RiskAssessmentProps {
   activeFilter: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL';
+  activeMonth?: string | null;
 }
 
-const RiskAssessment: React.FC<RiskAssessmentProps> = ({ activeFilter }) => {
-  // Map quarters to halves for risk data (we can keep the existing risk structure)
-  const getHalf = (filter: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL') => {
-    if (filter === 'ALL') return 'ALL';
-    return (filter === 'Q1' || filter === 'Q2') ? 'H1' : 'H2';
-  };
-  
-  const halfFilter = getHalf(activeFilter);
-  const risks = halfFilter === 'H1' ? h1Risks : halfFilter === 'H2' ? h2Risks : [...h1Risks, ...h2Risks];
+const RiskAssessment: React.FC<RiskAssessmentProps> = ({ activeFilter, activeMonth }) => {
+  // Get risks based on active month or filter
+  let risks: RiskItem[] = [];
+  let displayTitle = 'Risk Assessment';
+  let displaySubtitle = 'Potential challenges and mitigation strategies';
+
+  if (activeMonth) {
+    // Show risks for specific month
+    const monthDataItem = monthlyData.find(m => m.month === activeMonth);
+    if (monthDataItem) {
+      // Get monthly risks - filter risks that mention this month
+      const monthRisks = monthDataItem.half === 'H1' ? h1Risks : h2Risks;
+      risks = monthRisks.filter(risk => 
+        risk.risk.toLowerCase().includes(activeMonth.toLowerCase()) ||
+        risk.mitigation.toLowerCase().includes(activeMonth.toLowerCase())
+      );
+      
+      // If no month-specific risks found, show all risks for that half
+      if (risks.length === 0) {
+        risks = monthRisks;
+      }
+      
+      displayTitle = `${activeMonth} Risk Assessment`;
+      displaySubtitle = `Key risks and mitigation strategies for ${activeMonth}`;
+    }
+  } else {
+    // Show risks based on filter (quarterly/all)
+    const getHalf = (filter: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL') => {
+      if (filter === 'ALL') return 'ALL';
+      return (filter === 'Q1' || filter === 'Q2') ? 'H1' : 'H2';
+    };
+    
+    const halfFilter = getHalf(activeFilter);
+    risks = halfFilter === 'H1' ? h1Risks : halfFilter === 'H2' ? h2Risks : [...h1Risks, ...h2Risks];
+    
+    if (activeFilter !== 'ALL') {
+      displayTitle = `${activeFilter} Risk Assessment`;
+      displaySubtitle = `Risks for ${activeFilter}`;
+    }
+  }
 
   const getProbabilityColor = (prob: string) => {
     switch (prob.toLowerCase()) {
@@ -43,13 +75,18 @@ const RiskAssessment: React.FC<RiskAssessmentProps> = ({ activeFilter }) => {
           <AlertTriangle className="w-6 h-6 text-rose-500" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1a2332]">Risk Assessment</h2>
-          <p className="text-sm text-slate-500">Potential challenges and mitigation strategies</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1a2332]">{displayTitle}</h2>
+          <p className="text-sm text-slate-500">{displaySubtitle}</p>
         </div>
       </div>
 
-      <div className="space-y-4">
-        {risks.map((risk, index) => (
+      {risks.length === 0 ? (
+        <div className="text-center py-8">
+          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+          <p className="text-slate-600">No specific risks identified for this period.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">{risks.map((risk, index) => (
           <div 
             key={index}
             className="p-5 bg-slate-50/80 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
@@ -75,7 +112,8 @@ const RiskAssessment: React.FC<RiskAssessmentProps> = ({ activeFilter }) => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </GlassCard>
   );
 };
