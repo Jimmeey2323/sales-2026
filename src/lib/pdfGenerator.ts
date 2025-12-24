@@ -238,32 +238,62 @@ export const generateAdvancedPDF = async (options: PDFExportOptions = {}): Promi
         pdf.setFontSize(11);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(34, 197, 94);
-        pdf.text('✨ AI STRATEGIC ANALYSIS', margin + 4, yPos + 7);
+        pdf.text('AI STRATEGIC ANALYSIS', margin + 4, yPos + 7);
         
         yPos += 14;
 
+        // Clean and format summary for PDF
+        const cleanSummary = aiSummary
+          .replace(/[📊🎯📅💡⚠️✅→├─└]/g, '') // Remove emoji and ASCII box chars
+          .replace(/━+/g, '---') // Replace heavy lines with simple dashes
+          .replace(/•/g, '-') // Replace bullets with simple dashes
+          .trim();
+
         // Summary content in bordered box
-        const summaryLines = aiSummary.split('\n');
-        const estimatedHeight = summaryLines.length * 4 + 10;
+        const summaryLines = cleanSummary.split('\n').filter(line => line.trim()); // Remove empty lines
+        const estimatedHeight = Math.min(summaryLines.length * 5 + 15, pageHeight - yPos - 40); // Cap height
         
         pageNum = checkNewPage(estimatedHeight, pageNum);
         
-        drawBox(margin, yPos, contentWidth, estimatedHeight, 255, 255, 255, 220, 220, 220);
+        drawBox(margin, yPos, contentWidth, estimatedHeight, 252, 252, 252, 220, 220, 220);
         
-        yPos += 5;
-        pdf.setFontSize(8);
-        pdf.setFont('courier', 'normal');
+        yPos += 8;
+        pdf.setFontSize(8.5);
+        pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(40, 40, 40);
         
-        summaryLines.forEach((line) => {
-          pageNum = checkNewPage(5, pageNum);
-          const wrappedLines = pdf.splitTextToSize(line || ' ', contentWidth - 8);
-          wrappedLines.forEach((wLine: string) => {
-            pageNum = checkNewPage(5, pageNum);
-            pdf.text(wLine, margin + 4, yPos);
-            yPos += 4;
-          });
-        });
+        let processedLines = 0;
+        const maxLines = Math.floor(estimatedHeight / 5) - 2; // Prevent overflow
+        
+        for (const line of summaryLines) {
+          if (processedLines >= maxLines) break;
+          
+          pageNum = checkNewPage(6, pageNum);
+          
+          // Check if this is a header line (all caps or starts with specific patterns)
+          const isHeader = line === line.toUpperCase() && line.length > 5 && line.length < 60;
+          const isSubHeader = line.startsWith('WEEK ') || line.startsWith('OFFER ');
+          
+          if (isHeader) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(9);
+          } else if (isSubHeader) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(8.5);
+          } else {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+          }
+          
+          const wrappedLines = pdf.splitTextToSize(line.trim(), contentWidth - 12);
+          for (const wLine of wrappedLines.slice(0, 3)) { // Limit wrapping to prevent overflow
+            if (processedLines >= maxLines) break;
+            pageNum = checkNewPage(6, pageNum);
+            pdf.text(wLine, margin + 6, yPos);
+            yPos += 4.5;
+            processedLines++;
+          }
+        }
         
         yPos += 10;
       }
