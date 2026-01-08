@@ -25,51 +25,51 @@ INSERT INTO monthly_targets (
   theme, hero_offer, focus, context, pricing_note, is_anniversary
 ) VALUES 
   ('January', 2026, 'Q1', 15960000, 3929116, 3929116, 12098935, 2357470, 4364925, 1178735, 
-    'The Resolution Reset', 'The 4-Month Momentum Bundle (Buy 3, Get 1 Free)', 'Aggressive newcomer conversion and maximizing Cash Upfront via annual lock-ins', 
+    'The Resolution Reset', 'The Habit Hack', 'Aggressive newcomer conversion and maximizing Cash Upfront via annual lock-ins', 
     'January is the most critical acquisition month. Fresh Start psychology with 35% YoY growth target.', 'Focus on 4-Month bundles and Spot Annual offers for high cash flow.', false),
     
   ('February', 2026, 'Q1', 5000000, 4136223, 4136223, 4140000, 2481734, 860000, 1240867,
-    'Heart-Health & Valentine''s Connection', 'The Pulse-Check Duo (Buy one 1-Month, get second 50% off)', 'Transition January trialists into long-term members while utilizing Valentine''s Day',
+    'Heart-Health & Valentine''s Connection', 'Partner in Grime', 'Transition January trialists into long-term members while utilizing Valentine''s Day',
     'February''s goal is retention of January members plus Valentine''s occasion window for high conversion.', 'Focus on duo packages and self-love positioning to reduce entry friction.', false),
     
   ('March', 2026, 'Q1', 4700000, 4378890, 4378890, 4000000, 2627334, 700000, 1314667,
-    'The Power of Her', 'The Matriarch Legacy Pack (Lapsed/High-Value)', 'Convert February''s V-Day campaigns into long-term commitment, bridge to Q2',
+    'The Power of Her', 'She Means Business', 'Convert February''s V-Day campaigns into long-term commitment, bridge to Q2',
     'March is the bridge to Q2. Convert momentum from February into long-term commitment.', 'Focus on high-ticket retention and community building through women''s empowerment.', false),
     
   ('April', 2026, 'Q2', 25000000, 4844557, 4844557, 15000000, 2906734, 10000000, 1452367,
-    'INFINITE STRENGTH - 8th Anniversary Celebration', 'THE INFINITY 8 COLLECTION (Limited to 8 Memberships per Location)', 'Event-driven offers with scarcity strategy, high-impact experiences over discounts',
+    'INFINITE STRENGTH - 8th Anniversary Celebration', 'The Infinity Plan', 'Event-driven offers with scarcity strategy, high-impact experiences over discounts',
     '8th Anniversary Jubilee with Gold, Glamour, and Legacy theme. Experience-focused offers.', 'Premium pricing with exclusive experiences. Limited quantity creates FOMO.', true),
     
   ('May', 2026, 'Q2', 7592500, 5279003, 5279003, 5642500, 3167402, 1950000, 1583601,
-    'The Summer Sprint - Elite Transformation', 'The 6-Week Body-Con Bootcamp', 'High-liquidity month shifting from Access to Transformation & Luxury. Summer Holiday Prep + Student demographic',
+    'The Summer Sprint - Elite Transformation', 'Hot Girl Summer Prep', 'High-liquidity month shifting from Access to Transformation & Luxury. Summer Holiday Prep + Student demographic',
     'Capitalize on Summer Holiday Prep window and high-intent Student demographic with 33% YoY revenue jump.', 'Focus on High Average Order Value (AOV) and Elite 3-month pack upgrades.', false),
     
   ('June', 2026, 'Q2', 5641000, 4194448, 4194448, 4158000, 2516669, 1497500, 1257534,
-    'The Monsoon Motivation', 'The Monsoon Marathon (Attendance Challenge)', 'Indoor Comfort and Reactive Marketing. Re-engage lapsed users with bite-sized commitments and virtual safety nets',
+    'The Monsoon Motivation', 'Rain Check Rejected', 'Indoor Comfort and Reactive Marketing. Re-engage lapsed users with bite-sized commitments and virtual safety nets',
     'Traditionally low-attendance month due to heavy rains and traffic chaos. Focus on indoor comfort.', 'Mid-tier bundles with virtual components and rainy day reactive offers.', false),
     
   ('July', 2026, 'Q3', 6300000, 4669779, 4669779, 4560000, 2801867, 1680000, 1401156,
-    'The Storm Breaker', 'The Half-Year Hustle (7-for-6 Offer)', 'Logistical Relief and Social Proof to keep studio full when city slows down during peak monsoon',
+    'The Storm Breaker', 'Lucky 7', 'Logistical Relief and Social Proof to keep studio full when city slows down during peak monsoon',
     'Peak Monsoon month where logistics become primary hurdle. Focus on consistency amidst chaos.', 'Transport relief bundles and long-term lock-ins with forgiveness policies.', false),
     
   ('August', 2026, 'Q3', 7240000, 5369851, 5369851, 6210000, 3221911, 1050000, 1609970,
-    'Barre Besties & Vitality', 'The Vitality Loyalty Annual', 'Peer-to-peer acquisition and community appreciation to drive 70% repeat/30% new revenue mix',
+    'Barre Besties & Vitality', 'Til Death Do Us Squat', 'Peer-to-peer acquisition and community appreciation to drive 70% repeat/30% new revenue mix',
     'Community-focused month leveraging friendship psychology and loyalty rewards.', 'Annual renewals with bestie gifting and social proof mechanisms.', false),
     
   ('September', 2026, 'Q3', 8340000, 6190299, 6190299, 7090000, 3714179, 1250000, 1857896,
-    'The Professional''s Peak & Master Educator Series', 'The Trainer''s Circle (P2P Code)', 'Honoring expertise through Trainer-led acquisition, team competition, and high-performance results',
+    'The Professional''s Peak & Master Educator Series', 'The Insider Deal', 'Honoring expertise through Trainer-led acquisition, team competition, and high-performance results',
     'Teachers'' Day focus with trainer-led referrals and corporate executive packages.', 'Trainer-driven codes and executive flexibility packages with technical mastery focus.', false),
     
   ('October', 2026, 'Q4', 8550000, 6343284, 6343284, 7270000, 3805970, 1280000, 1902985,
-    'The Pre-Festive Glow & Vitality', 'The Golden Ticket Annual', 'Aesthetic results, high-velocity toning, and premium gifting ahead of social season',
+    'The Pre-Festive Glow & Vitality', 'Willy Wonka Wellness', 'Aesthetic results, high-velocity toning, and premium gifting ahead of social season',
     'Focus on visible results for upcoming social events and luxury gifting preparation.', 'Short-term unlimited for immediate results and exclusive annual memberships with status symbols.', false),
     
   ('November', 2026, 'Q4', 6300000, 4671642, 4671642, 4850000, 2802985, 1480000, 1402456,
-    'The Detox & Deal - Post-Diwali Recovery', 'The Black Friday Vault (50 Class Pack with 24-Month Validity)', 'Combat post-festive slump by gamifying detox while using Black Friday for high-value upfront cash',
+    'The Detox & Deal - Post-Diwali Recovery', 'The Doomsday Prep', 'Combat post-festive slump by gamifying detox while using Black Friday for high-value upfront cash',
     'Post-Diwali recovery with Black Friday revenue injection. High Average Transaction Value focus.', 'Guilt-based detox marketing with massive value Black Friday offers.', false),
     
   ('December', 2026, 'Q4', 5150000, 3820896, 3820896, 3200000, 2292537, 950000, 1146269,
-    'Finish Strong - Pre-Resolution Capture', '2027 Founder Protection (Pre-Sale Annual at 2025 prices)', 'Fill classes during holiday travel season and lock in 2027 revenue before January rush',
+    'Finish Strong - Pre-Resolution Capture', 'Price Lock & Load', 'Fill classes during holiday travel season and lock in 2027 revenue before January rush',
     'Holiday gifting and 2027 revenue pre-capture with founder protection pricing.', 'Gifting solutions and future-proof purchases with early bird discounts.', false);
 
 -- ==========================================
